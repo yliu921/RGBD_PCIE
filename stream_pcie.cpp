@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
     
     uint64_t size[2] = {0,0};
 
-
     // get the camera device
     std::vector<tof::DiscoveredKea> cameras = tof::discover_kea_cameras();
     if (cameras.empty()) {
@@ -51,8 +50,7 @@ int main(int argc, char *argv[]) {
     }
 
     tof::KeaCamera cam(cameras.front().serial());
-    //tof::KeaCamera cam("202005a");
-    std::cout << "Streaming from camera " << cam.get_serial() << "\n";
+    PRINT_INFO2("Streaming from camera ", cam.get_serial());
     tof::select_streams(cam, {tof::FrameType::Z, tof::FrameType::BGR_PROJECTED});
     cam.start();
     auto frames = cam.get_frames();
@@ -62,21 +60,21 @@ int main(int argc, char *argv[]) {
         switch (frame.frame_type()) {
             case tof::FrameType::Z: {
                 z = cast_data_safe<float>(frame);
-                std::cout << "Middle Z pixel value: " << z[153280] << "\n";
-                std::cout << "frame siez: "<< frame.size() // row*col*4 
-                          << " row: "<< frame.rows() 
-                          << " cols: "<< frame.cols()<< "\n"; 
+                std::cout<<"Middle Z pixel value: "<<z[153280]<<"\n";
+                std::cout<<"frame siez: "<< frame.size() // row*col*4 
+                         <<" row: "<< frame.rows() 
+                         <<" cols: "<< frame.cols()<< "\n"; 
                 size[0] = frame.size();
                 std::cout << "address:"<<z<<"\n";
                 break;
             }
             case tof::FrameType::BGR_PROJECTED: {
                 bgr = cast_data_safe<BGR>(frame);
-                std::cout << "Middle blue pixel value: " << (int)bgr[153280].b << "\n";
-                std::cout << "frame siez: "<< frame.size() // row*col*4 
-                      << " row: "<< frame.rows() 
-                      << " cols: "<< frame.cols()<< "\n"; 
-                std::cout << "address:"<<bgr<<"\n";
+                std::cout<<"Middle blue pixel value: "<<(int)bgr[153280].b<<"\n";
+                std::cout<<"frame siez: "<< frame.size() // row*col*4 
+                         <<" row: "<< frame.rows() 
+                         <<" cols: "<< frame.cols()<< "\n"; 
+                std::cout<<"address:"<<bgr<<"\n";
                 size[1] = frame.size();
                 break;
             }
@@ -117,23 +115,17 @@ int main(int argc, char *argv[]) {
         //goto close_and_clear;
         return -1;
     }
- #ifdef DEBUG
+ //#ifdef DEBUG
     uint8_t *b = (uint8_t *)z; 
     for(int ii = 0; ii < size[0]; ++ii) {
         b[ii] = ii;
         printf("0x%02x ", b[ii]);
     }
     std::cout << "\n";
-#endif
+//#endif
 
     PRINT_INFO("Start streaming..");
-
     millisecond = get_millisecond(); // start time
-    //if (direction == 't') {
-        // if(size[0] != fread(buffer, 1, size[0], file_p) ) {                      // local file -> local buffer
-        //     printf("*** ERROR: failed to read %s\n", file_name);
-        //     goto close_and_clear;
-        // }
     if(dev_write(dev_fd, address, (void *)z, size[0])) {// local buffer -> device
         printf("*** ERROR: failed to write %s\n", dev_name);
         goto close_and_clear;
