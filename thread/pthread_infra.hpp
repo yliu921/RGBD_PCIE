@@ -67,19 +67,13 @@ void *produce(void *data) {
     }
 }
 void *consume(void *args) {
-    
-    // pthread_cleanup_push(cleanup_handler, NULL);
-    
+    // pthread_cleanup_push(cleanup_handler, NULL);    
     Packet t;
     struct consumer_args *cargs = (struct consumer_args *)args;
     std::cout << "Consume "  << cargs->dev_name << " " << cargs->address << "\n";
     int dev_fd = open(cargs->dev_name, O_RDWR);
     if(dev_fd < 0) {
-        PRINT_ERROR("Failed to open PCIE device");
-        
-        // pthread_cancel(pthread_self());
-        //pthread_cleanup_pop(1);
-        //pthread_exit(NULL);
+        PRINT_ERROR("Failed to open PCIE device");  
         return NULL;
     } 
     while(1) {
@@ -92,7 +86,7 @@ void *consume(void *args) {
         q.pop();
         pthread_cond_signal(&notfull);
         pthread_mutex_unlock(&lock);
-       // std::cout<<"Consume "<< t.frame_id  <<" Middle Z: "<<t.z[153280]<<"\n";
+        std::cout<<"Consume "<< t.frame_id  <<" Middle Z: "<<t.z[153280]<<"\n";
         dev_write(dev_fd, cargs->address, (void*)t.z, t.frame_id);
         delete[] t.z;
     }

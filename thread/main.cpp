@@ -16,7 +16,11 @@
 
 namespace tof = chronoptics::tof;
 
-int main(int argc, char *argv[])  {
+int main(int argc, char *argv[]) {
+    if(geteuid() != 0) {
+        PRINT_ERROR("Please run with sudo privileges");
+        exit(EXIT_FAILURE);
+    }
     if(argc < 4) {
         PRINT_ERROR("Not enough arguments");
         return -1;
