@@ -6,7 +6,8 @@
 
 #include <sys/timeb.h>
 
-
+#ifndef PCIE_HPP
+#define PCIE_HPP
 #define  DMA_MAX_SIZE   0x10000000UL
 char USAGE [] = 
     "Usage: \n"
@@ -57,9 +58,6 @@ int dev_write (int dev_fd, uint64_t addr, void *buffer, uint64_t size) {
     return 0;
 }
 
-
-
-
 // function : get_millisecond
 // description : get time in millisecond
 static uint64_t get_millisecond () {
@@ -69,7 +67,7 @@ static uint64_t get_millisecond () {
     // tb.time is the number of seconds since 00:00:00 January 1, 1970 UTC time;
     // tb.millitm is the number of milliseconds in a second
 }
-
+#endif
 
 
 

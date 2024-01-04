@@ -12,18 +12,26 @@
 #include "utils.hpp"
 #include "data_structures.hpp"
 #include "stream_infra.hpp"
+#include "pcie.hpp"
 namespace tof = chronoptics::tof;
 pthread_mutex_t lock;
 pthread_cond_t notempty;
 pthread_cond_t notfull;
 
 struct consumer_args {
-    char *file_name; // arg[0]
-    char direction;
+    // char *file_name; // arg[0]
+    // char direction;
     char *dev_name;
     uint64_t address;
     uint64_t size;
 };
+
+// void cleanup_handler(void *arg) {
+//     printf("Cleanup handler: Thread %ld cleaning up\n", (long)pthread_self());
+//     // Additional cleanup code can be added here
+//     pthread_mutex_unlock(&lock);
+// }
+
 
 void *produce(void *data) {
     camera_stream cameras;
@@ -59,12 +67,21 @@ void *produce(void *data) {
     }
 }
 void *consume(void *args) {
+    
+    // pthread_cleanup_push(cleanup_handler, NULL);
+    
     Packet t;
     struct consumer_args *cargs = (struct consumer_args *)args;
-    std::cout << "Consume " << cargs->file_name << " " 
-                            << cargs->direction << " " 
-                            << cargs->dev_name << " " << cargs->address << "\n";
-
+    std::cout << "Consume "  << cargs->dev_name << " " << cargs->address << "\n";
+    int dev_fd = open(cargs->dev_name, O_RDWR);
+    if(dev_fd < 0) {
+        PRINT_ERROR("Failed to open PCIE device");
+        
+        // pthread_cancel(pthread_self());
+        //pthread_cleanup_pop(1);
+        //pthread_exit(NULL);
+        return NULL;
+    } 
     while(1) {
         pthread_mutex_lock(&lock);
         while(q.size() == 0) {
@@ -73,11 +90,10 @@ void *consume(void *args) {
         }
         t = q.front();
         q.pop();
-
         pthread_cond_signal(&notfull);
         pthread_mutex_unlock(&lock);
-        std::cout<<"Consume "<< t.frame_id  <<" Middle Z: "<<t.z[153280]<<"\n";
+       // std::cout<<"Consume "<< t.frame_id  <<" Middle Z: "<<t.z[153280]<<"\n";
+        dev_write(dev_fd, cargs->address, (void*)t.z, t.frame_id);
         delete[] t.z;
-        // printf("Consume%d\n", t.buffer[0]);
     }
 }

@@ -17,19 +17,19 @@
 namespace tof = chronoptics::tof;
 
 int main(int argc, char *argv[])  {
-    if(argc < 6) {
+    if(argc < 4) {
         PRINT_ERROR("Not enough arguments");
         return -1;
     }
     struct consumer_args cargs;// = new struct consumer_args; // consumer args
-    cargs.file_name = argv[1];
-    cargs.direction = argv[2][0];
-    cargs.dev_name = argv[3];
-    if(0 == parse_uint(argv[4], &cargs.address)) {
+    // cargs.file_name = argv[1];
+    // cargs.direction = argv[2][0];
+    cargs.dev_name = argv[1];
+    if(0 == parse_uint(argv[2], &cargs.address)) {
         PRINT_ERROR("Failed to parse address");
         return -1;
     }
-    if(0 == parse_uint(argv[5], &cargs.size)) {
+    if(0 == parse_uint(argv[3], &cargs.size)) {
         PRINT_ERROR("Failed to parse size");
         return -1;
     }
@@ -45,4 +45,6 @@ int main(int argc, char *argv[])  {
     pthread_mutex_destroy(&lock);
     pthread_cond_destroy(&notempty);
     pthread_cond_destroy(&notfull);
+    printf("Main thread exiting\n");
+    return 0;
 }
